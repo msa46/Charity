@@ -270,6 +270,52 @@ cur.execute('''
         (2, 1);
 
 ''')
+###Triggers
+cur.execute('''
+CREATE FUNCTION needHandler() RETURNS TRIGGER AS $needHandler$
+    DECLARE
+    am  INTEGER;
+    BEGIN
+    am := (select financial_aid.amount FROM financial_aid NATURAL JOIN fdonate WHERE  fid=new.fid);
+
+    UPDATE financial_aid SET amount = financial_aid.amount - am WHERE  fid=new.fid;
+    END;
+    $needHandler$ LANGUAGE plpgsql;
+
+CREATE TRIGGER needHandler AFTER INSERT ON fdonate
+    FOR EACH ROW
+    EXECUTE PROCEDURE needHandler();
+
+''')
+
+cur.execute('''
+CREATE FUNCTION fNeedChecker() RETURNS TRIGGER AS $fNeedChecker$
+    BEGIN
+    DELETE FROM financial_aid
+        WHERE financial_aid.amount = 0;
+    END;
+
+    $fNeedChecker$ LANGUAGE plpgsql;
+
+CREATE TRIGGER fNeedChecker AFTER UPDATE ON financial_aid
+    FOR EACH ROW
+    EXECUTE PROCEDURE fNeedChecker();
+''')
+
+cur.execute('''
+CREATE FUNCTION ncNeedChecker() RETURNS TRIGGER AS $ncNeedChecker$
+    BEGIN
+    DELETE FROM non_cash_aid
+        WHERE non_cash_aid.number = 0;
+    END;
+
+    $ncNeedChecker$ LANGUAGE plpgsql;
+
+CREATE TRIGGER ncNeedChecker AFTER UPDATE ON non_cash_aid
+    FOR EACH ROW
+    EXECUTE PROCEDURE ncNeedChecker();
+''')
+
 
 conn.commit()
 conn.close()
