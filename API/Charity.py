@@ -11,6 +11,7 @@ charity_fields=['COID','Name','PostalCode','Address','PhoneNumber']
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
 Worker_fields=['SSN','Date_of_entry','Field','CID']
+Financial_aid_fields=['FID','Amount','Unit','Date']
 @api.route('/<id>/campaigns')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
@@ -61,6 +62,22 @@ class Workers(Resource):
         workers = serializer(Worker_fields,workers)
         print(workers)
         return workers
+@api.route('/<id>/financial')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class Financial(Resource):
+    def get(self,id):
+        '''Get financial aids to a charity '''
+
+        cur.execute('''
+            select financial_aid.* from financial_aid natural join fdonate natural join campaign inner join charity_organization co on campaign.coid = co.coid
+            where co.coid=%s ;
+        ''',(id,))
+        financial_aid=cur.fetchall()
+        if(len(financial_aid) == 0):
+            abort(400,custom='no members')
+        financial_aid = serializer(Financial_aid_fields,financial_aid)
+        return financial_aid
 
 
 
