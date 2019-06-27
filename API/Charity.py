@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields, abort
 import json
 from flask import Response
 from Utils.serializer import serializer
@@ -8,6 +8,8 @@ cur = conn.cursor()
 
 api = Namespace('Charity',description='Charity related operations')
 charity_fields=['COID','Name','PostalCode','Address','PhoneNumber']
+member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
+campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
 @api.route('/')
 class Initial(Resource):
     def get(self):
@@ -27,5 +29,13 @@ class Initial(Resource):
 class Charity(Resource):
     def get(self,id):
         '''Get members who helped this charity '''
-      
-        return{"Hello": id}
+
+        cur.execute('''
+            select member.* from   member natural join fdonate natural  join campaign inner  join  charity_organization co on campaign.coid = co.coid
+            where co.coid = %s;
+        ''',(id,))
+        members=cur.fetchall()
+        if(len(members) == 0):
+            abort(400,custom='no members')
+        members = serializer(member_fields,members)
+        return members
