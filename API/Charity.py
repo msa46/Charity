@@ -10,20 +10,23 @@ api = Namespace('Charity',description='Charity related operations')
 charity_fields=['COID','Name','PostalCode','Address','PhoneNumber']
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
-@api.route('/')
-class Initial(Resource):
-    def get(self):
-        '''Return all Charities'''
+@api.route('/<id>/campaigns')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class initial(Resource):
+    def get(self,id):
+        '''Get all campaigns of a charity'''
         
         cur.execute('''
-            select * from charity_organization;
-        ''')
+                select campaign.* from campaign inner  join  charity_organization co on campaign.coid = co.coid
+                where co.coid = %s;
+        ''',(id,))
         records = cur.fetchall() 
-        records = serializer(charity_fields,records)
+        records = serializer(campaign_fields,records)
         return records
 
 
-@api.route('/<id>')
+@api.route('/<id>/helpers')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
 class Charity(Resource):
@@ -39,3 +42,6 @@ class Charity(Resource):
             abort(400,custom='no members')
         members = serializer(member_fields,members)
         return members
+
+
+    
