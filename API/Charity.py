@@ -10,6 +10,7 @@ api = Namespace('Charity',description='Charity related operations')
 charity_fields=['COID','Name','PostalCode','Address','PhoneNumber']
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
+Worker_fields=['SSN','Date_of_entry','Field','CID']
 @api.route('/<id>/campaigns')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
@@ -42,6 +43,26 @@ class Charity(Resource):
             abort(400,custom='no members')
         members = serializer(member_fields,members)
         return members
+
+@api.route('/<id>/workers')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class Workers(Resource):
+    def get(self,id):
+        '''Get workers who work at this charity '''
+
+        cur.execute('''
+            select worker.* from  worker natural join campaign inner join charity_organization co on campaign.coid = co.coid
+            where co.coid = %s;
+        ''',(id,))
+        workers=cur.fetchall()
+        if(len(workers) == 0):
+            abort(400,custom='no members')
+        workers = serializer(Worker_fields,workers)
+        print(workers)
+        return workers
+
+
 
 
     
