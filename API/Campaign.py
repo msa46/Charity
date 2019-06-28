@@ -21,6 +21,7 @@ campaign_insertion_model=api.model('Adding a campaign',{
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
 Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
 Financial_aid_fields=['FID','Amount','Unit','Date']
+Destitute_fields=['SSN','First_name','Last_name','Date_of_birth','Care_taker_ID','Campaign_ID']
 @api.route('/Add')
 @api.expect(campaign_insertion_model)
 @api.response(204,'successfully added')
@@ -111,3 +112,26 @@ class financial(Resource):
             abort(400,custom='no helps')
         helps = serializer(Financial_aid_fields,helps)
         return helps
+
+@api.route('/<id>/destitute')
+@api.param('id','id of a campaign')
+@api.response(404,'campaign not found')
+class Destitute(Resource):
+    def get(self,id):
+        '''get destitutes under a campaign'''
+        cur.execute('''
+        select * from campaign
+        where CID = %s        
+        ''',(id,))
+        campaign = cur.fetchall()
+        if(len(campaign) ==0 ):
+            return None,404
+        cur.execute('''
+            select destitute.* from destitute 
+            where destitute.campaignid = %s ;
+        ''',(id,))
+        destitutes = cur.fetchall()
+        if(len(destitutes) == 0):
+            abort(400,custom='no destitutes')
+        destitutes=serializer(Destitute_fields,destitutes)
+        return destitutes
