@@ -149,7 +149,7 @@ class Destitue(Resource):
         return destitutes
 
 
-@api.route('<id>/financial_helps')
+@api.route('/<id>/financial_helps')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
 class Financial_help(Resource):
