@@ -72,6 +72,9 @@ class helps(Resource):
         where campaign.cid = %s group by campaign.cid ;
         ''',(id, ))
         helps = cur.fetchall()
+        if (len(helps) == 0):
+            abort(400,custom='no helps')
         added_field = campaign_fields + ['Helps']
         helps = serializer(added_field,helps)
         return helps
+
