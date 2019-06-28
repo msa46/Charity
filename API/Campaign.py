@@ -59,3 +59,19 @@ class Add(Resource):
         conn.commit()
         print(data)
         return None,204
+
+
+@api.route('/<id>/helps')
+@api.param('id','id of a campaign')
+@api.response(404,'campaign not found')
+class helps(Resource):
+    def get(self,id):
+        'Get campaign informations and financial helps to a campaign'
+        cur.execute('''
+        select campaign.*,sum(financial_aid.amount) from campaign natural join fdonate natural join financial_aid
+        where campaign.cid = %s group by campaign.cid ;
+        ''',(id, ))
+        helps = cur.fetchall()
+        added_field = campaign_fields + ['Helps']
+        helps = serializer(added_field,helps)
+        return helps
