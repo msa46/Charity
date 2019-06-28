@@ -13,6 +13,7 @@ campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','
 Worker_fields=['SSN','Date_of_entry','Field','CID']
 Financial_aid_fields=['FID','Amount','Unit','Date']
 Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
+Destitute_fields=['SSN','First_name','Last_name','Date_of_birth','Care_taker_ID','Campaign_ID']
 @api.route('/<id>/campaigns')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
@@ -96,6 +97,24 @@ class Non_financial_aid(Resource):
             abort(400,custom='no members')
         non_financial_aid = serializer(Non_financial_aid_fields,non_financial_aid)
         return non_financial_aid
+
+@api.route('/<id>/destitute')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class Destitue(Resource):
+    def get(self,id):
+        '''Get destitute under a charity '''
+
+        cur.execute('''
+            select destitute.* from destitute natural join campaign inner join  charity_organization co on campaign.coid = co.coid
+            where co.coid = %s;
+        ''',(id,))
+        destitutes=cur.fetchall()
+        if(len(destitutes) == 0):
+            abort(400,custom='no destitue')
+        destitutes = serializer(Destitute_fields,destitutes)
+        return destitutes
+
 
 
 
