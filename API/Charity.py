@@ -12,6 +12,7 @@ member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
 Worker_fields=['SSN','Date_of_entry','Field','CID']
 Financial_aid_fields=['FID','Amount','Unit','Date']
+Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
 @api.route('/<id>/campaigns')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
@@ -79,6 +80,22 @@ class Financial(Resource):
         financial_aid = serializer(Financial_aid_fields,financial_aid)
         return financial_aid
 
+@api.route('/<id>/nonfinancial')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class Financial(Resource):
+    def get(self,id):
+        '''Get non financial aids to a charity '''
+
+        cur.execute('''
+            select non_cash_aid.* from non_cash_aid natural join ncdonate inner join campaign c on ncdonate.cid = c.cid inner join charity_organization co on c.coid = co.coid
+            where co.coid=%s;
+        ''',(id,))
+        non_financial_aid=cur.fetchall()
+        if(len(non_financial_aid) == 0):
+            abort(400,custom='no members')
+        non_financial_aid = serializer(Non_financial_aid_fields,non_financial_aid)
+        return non_financial_aid
 
 
 
