@@ -149,6 +149,19 @@ class Destitue(Resource):
         return destitutes
 
 
-
-
+@api.route('<id>/financial_helps')
+@api.param('id','id of a charity')
+@api.response(404,'charity not found')
+class Financial_help(Resource):
+    def get(self,id):
+        '''Get members who helped financialy'''
+        cur.execute('''
+            select member.* from member natural join fdonate natural join campaign inner join charity_organization co on campaign.coid = co.coid
+            where co.coid=%s ;
+        ''',(id,))
+        helpers = cur.fetchall()
+        if(len(helpers) == 0):
+            abort(400,custom='no financial helpers')
+        helpers = serializer(member_fields,helpers)
+        return helpers
     
