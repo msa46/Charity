@@ -20,6 +20,7 @@ campaign_insertion_model=api.model('Adding a campaign',{
 })
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
 Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
+Financial_aid_fields=['FID','Amount','Unit','Date']
 @api.route('/Add')
 @api.expect(campaign_insertion_model)
 @api.response(204,'successfully added')
@@ -93,4 +94,20 @@ class Non_financial(Resource):
         if(len(helps) == 0):
             abort(400,custom='no need')
         helps = serializer(Non_financial_aid_fields,helps)
+        return helps
+
+@api.route('/<id>/financial')
+@api.param('id','id of a campaign')
+@api.response(404,'campaign not found')
+class financial(Resource):
+    def get(self,id):
+        'Get financial helps to a campaign'
+        cur.execute('''
+        select financial_aid.* from financial_aid natural join fdonate natural join campaign
+        where campaign.cid = %s;
+        ''',(id, ))
+        helps = cur.fetchall()
+        if(len(helps) == 0):
+            abort(400,custom='no helps')
+        helps = serializer(Financial_aid_fields,helps)
         return helps
