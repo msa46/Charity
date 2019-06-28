@@ -1,5 +1,6 @@
 from flask_restplus import Namespace, Resource, fields, abort
 import json
+from flask import request
 from flask import Response
 from Utils.serializer import serializer
 import psycopg2
@@ -7,6 +8,14 @@ conn = psycopg2.connect(database="charity", user = "admin", password = "1234", h
 cur = conn.cursor()
 
 api = Namespace('Charity',description='Charity related operations')
+charity_insertion_model=api.model('Adding a charity',{
+        "COID":fields.Integer(description='Charity ID', required=True),
+        "Name": fields.String(description='Name of charity', required=True),
+        "PostalCode": fields.String(description='Postal code of charity', required=True),
+        "Address": fields.String(description='Address of charity', required=True),
+        "PhoneNumber": fields.String(description='Phone number of charity', required=True),
+})
+
 charity_fields=['COID','Name','PostalCode','Address','PhoneNumber']
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 campaign_fields=['CID','Name','Bank_account_number','Address','Purposs','COID','GoalID']
@@ -14,6 +23,30 @@ Worker_fields=['SSN','Date_of_entry','Field','CID']
 Financial_aid_fields=['FID','Amount','Unit','Date']
 Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
 Destitute_fields=['SSN','First_name','Last_name','Date_of_birth','Care_taker_ID','Campaign_ID']
+@api.route('/Add')
+@api.expect(charity_insertion_model)
+@api.response(204,'successfully added')
+@api.response(400,'there is a charity with this COID')
+class Add(Resource):
+    def post(self):
+        '''add a new charity '''
+        data = api.payload
+        cur.execute('''
+        select * from charity_organization
+        where COID = %s        
+        ''',(data["COID"],))
+        charity = cur.fetchall()
+        if len(charity) == 1:
+            return None, 400
+        cur.execute('''
+        insert into charity_organization values (%s,%s, %s,%s,%s);
+        ''',(data['COID'],data['Name'],data['PostalCode'],data['Address'],data['PhoneNumber']))
+        conn.commit()
+        return None,204
+
+
+
+
 @api.route('/<id>/campaigns')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
