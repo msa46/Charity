@@ -83,7 +83,7 @@ class Financial(Resource):
 @api.route('/<id>/nonfinancial')
 @api.param('id','id of a charity')
 @api.response(404,'charity not found')
-class Financial(Resource):
+class Non_financial_aid(Resource):
     def get(self,id):
         '''Get non financial aids to a charity '''
 
