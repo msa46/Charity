@@ -58,3 +58,18 @@ class Add(Resource):
         conn.commit()
 
         return None,204
+@api.route('/<id>/care_taker')
+@api.param('id','id of a detitute')
+@api.response(404,'Destitute not found')
+class care_taker(Resource):
+    def get(self,id):
+        '''Get destitutes under a certin care taker'''
+        cur.execute('''
+        select d.* from destitute d inner join destitute dr on d.ssn =dr.care_takerid
+        where d.care_takerid = %s;
+        ''',(id, ))
+        care_taker=cur.fetchall()
+        if(len(care_taker) == 0):
+            abort(400,custom='no destitute')
+        care_taker=serializer(Destitute_fields,care_taker)
+        return care_taker
