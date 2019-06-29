@@ -1,6 +1,7 @@
 from flask_restplus import Api
 from .Charity import api as charity_api
 from .Campaign import api as campaign_api
+from .Destitute import api as destitute_api
 api = Api(
     title='Charity project',
     version='0.1',
@@ -9,3 +10,4 @@ api = Api(
 
 api.add_namespace(charity_api)
 api.add_namespace(campaign_api)
+api.add_namespace(destitute_api)
