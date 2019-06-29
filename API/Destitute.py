@@ -73,3 +73,20 @@ class care_taker(Resource):
             abort(400,custom='no destitute')
         care_taker=serializer(Destitute_fields,care_taker)
         return care_taker
+
+@api.route('/<id>/reason')
+@api.param('id','id of a detitute')
+@api.response(404,'Destitute not found')
+class Reason(Resource):
+    def get(self,id):
+        '''Get destitutes reason for being in campaign'''
+        cur.execute('''
+        select destitute.* ,destitute_reason.reason from destitute natural join destitute_reason
+        where destitute.ssn = %s;
+        ''',(id, ))
+        reason=cur.fetchall()
+        if(len(reason) == 0):
+            abort(400,custom='no reason mentioned')
+        reason_fields = Destitute_fields + ["Reason"]
+        reason=serializer(reason_fields,reason)
+        return reason
