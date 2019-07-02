@@ -24,6 +24,13 @@ financial_donate_insertion_model=api.model('Addiootion for FDonate table without
     "Unit":fields.String(description="unit of the aid given"),
     "Date":fields.String(description='date of creation/transaction')
 })
+non_financial_insertion_model=api.model('Adding Nonfinancial object',{
+    "CID":fields.Integer(description="Campaign ID"),
+    "Value":fields.Integer(description="Amount",required=True),
+    "Unit":fields.String(description="unit of the aid given"),
+    "Name":fields.String(description="unit of the aid given"),
+    "Number":fields.Integer(description='date of creation/transaction')
+})
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 
 @api.route('/')
@@ -73,3 +80,23 @@ class Donate(Resource):
         conn.commit()
 
         return 201,None
+    @api.expect(non_financial_insertion_model)
+    def put(self,id):
+        '''Make non financial donation '''
+        data = api.payload
+        cur.execute('''
+            select NCID from non_cash_aid order by NCID desc limit 1 ;
+            ''')
+        NCID = cur.fetchall()[0][0] + 1
+        cur.execute('''
+        insert into Non_cash_aid values(%s,%s,%s,%s,%s)
+            ''',(NCID,data["Value"],data["Unit"],data["Name"],data["Number"],)
+        )
+        conn.commit()
+
+        cur.execute('''
+        insert into NCDONATE values(%s,%s,%s)
+        ''',(id,NCID,data["CID"]))
+        conn.commit()
+
+        return None,201
