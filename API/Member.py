@@ -36,8 +36,8 @@ member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email
 @api.route('/')
 @api.response(409,'There is a member object with this SSN')
 @api.response(204,'Successfully created')
-@api.expect(memeber_insertion_model)
 class Member(Resource):
+    @api.expect(memeber_insertion_model)
     def post(self):
         '''Add a new member'''
         data = api.payload
@@ -55,6 +55,18 @@ class Member(Resource):
         conn.commit()
 
         return None,204
+
+    def get(self):
+        '''Returns a list of members donation's starting with the highests'''
+        cur.execute('''
+        select member.*,sum(financial_aid.amount) from member natural join fdonate natural join financial_aid  group by ssn,amount order by amount desc;
+        
+        ''')
+        members = cur.fetchall()
+        lst = member_fields + ["Amount"]
+        members=serializer(lst,members)
+        return members
+
 @api.route('/<id>')
 @api.param('id','SSN of a member')
 @api.response(201,'Successfully donated')
