@@ -18,6 +18,12 @@ memeber_insertion_model=api.model('Addition of member',{
 })
 
 
+financial_donate_insertion_model=api.model('Addiootion for FDonate table without id',{
+    "CID":fields.Integer(description="Campaign ID"),
+    "Amount":fields.Integer(description="Amount",required=True),
+    "Unit":fields.String(description="unit of the aid given"),
+    "Date":fields.String(description='date of creation/transaction')
+})
 member_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password']
 
 @api.route('/')
@@ -42,3 +48,28 @@ class Member(Resource):
         conn.commit()
 
         return None,204
+@api.route('/<id>')
+@api.param('id','SSN of a member')
+@api.response(201,'Successfully donated')
+class Donate(Resource):
+    @api.expect(financial_donate_insertion_model)
+    def post(self,id):
+        '''Make a financial donate'''
+        data = api.payload
+        cur.execute('''
+        select FID from financial_aid order by FID desc limit 1 ;
+        ''')
+        
+        FID = cur.fetchall()[0][0] + 1
+        
+        cur.execute('''
+            insert into financial_aid values(%s,%s,%s,%s)
+        ''',(FID,data["Amount"],data["Unit"],data["Date"]))
+        conn.commit()
+        
+        cur.execute('''
+        insert into FDonate values(%s,%s,%s)
+        ''',(id,FID,data["CID"]))
+        conn.commit()
+
+        return 201,None
