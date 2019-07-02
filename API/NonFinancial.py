@@ -12,7 +12,7 @@ non_financial_insertion_model=api.model('Adding Nonfinancial object',{
     "Value":fields.Integer(description="Amount",required=True),
     "Unit":fields.String(description="unit of the aid given"),
     "Name":fields.String(description="unit of the aid given"),
-    "Number":fields.String(description='date of creation/transaction')
+    "Number":fields.Integer(description='date of creation/transaction')
 })
 
 Non_financial_aid_fields=['NCID','Value','Unit','Name','Number']
