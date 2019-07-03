@@ -5,6 +5,7 @@ from .Destitute import api as destitute_api
 from .Financial import api as financial_api
 from .NonFinancial import api as non_financial_api
 from .Member import api as member_api
+from .Worker import api as worker_api
 
 api = Api(
     title='Charity project',
@@ -18,3 +19,4 @@ api.add_namespace(destitute_api)
 api.add_namespace(financial_api)
 api.add_namespace(non_financial_api)
 api.add_namespace(member_api)
+api.add_namespace(worker_api)
