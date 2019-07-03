@@ -13,6 +13,7 @@ worker_insertion_model=api.model('Addition of worker(member already created)',{
             "CID":fields.Integer(description="Campaign ID",required=True)
 })
 
+worker_info_fields=['SSN','User_name','First_name','Last_name','Date_of_birth','Email', 'Password','Date_of_entry','Field','CID']
 
 
 @api.route('/<id>')
@@ -46,3 +47,18 @@ class Worker(Resource):
         conn.commit()
 
         return None,204
+
+@api.route('/<field>')
+@api.param('field','field of work')
+@api.response(404,'no worker with that SSN')
+class Info(Resource):
+    def get(self,field):
+        '''get workers info who are in a certin field'''
+        cur.execute('''
+            select * from member natural join worker where worker.field=%s;
+        ''',(field,))    
+        worker = cur.fetchall()
+        if(len(worker) == 0):
+            return None,404
+        worker = serializer(worker_info_fields,worker)
+        return worker
