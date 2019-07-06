@@ -10,7 +10,6 @@ cur = conn.cursor()
 
 api = Namespace('Campaign',description='Champaign related operations')
 campaign_insertion_model=api.model('Adding a campaign',{
-        "CID":fields.Integer(description='Campaign ID', required=True),
         "Name": fields.String(description='Name of campaign', required=True),
         "Bank_account": fields.String(description='Banc account of campaign', required=True),
         "Address": fields.String(description='Address of campaign', required=True),
@@ -34,11 +33,9 @@ class Add(Resource):
         data = api.payload
         cur.execute('''
         select * from campaign
-        where CID = %s        
-        ''',(data["CID"],))
-        campaign = cur.fetchall()
-        if len(campaign) == 1:
-            return None, 409
+            order by CID desc limit 1
+        ''')
+        CID = cur.fetchall()[0][0] + 1
         
         cur.execute('''
         select * from charity_organization
@@ -58,9 +55,8 @@ class Add(Resource):
         
         cur.execute('''
         insert into campaign values (%s, %s, %s, %s, %s, %s, %s);
-        ''',(data['CID'],data['Name'],data['Bank_account'],data['Address'],data['Purpose'],data['COID'],data['GoalID']))
+        ''',(CID,data['Name'],data['Bank_account'],data['Address'],data['Purpose'],data['COID'],data['GoalID']))
         conn.commit()
-        print(data)
         return None,204
 
 
